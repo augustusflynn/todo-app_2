@@ -1,0 +1,97 @@
+.todo-app {
+  position: absolute;
+  top: 320px;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+span {
+  color: #fff;
+}
+.todo-app .todo-app-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.todo-app .todo-app-form input {
+  background-color: transparent;
+  outline: none;
+  border: 1px solid #fff;
+  line-height: 34px;
+  font-size: 20px;
+  padding-left: 8px;
+  color: #fff;
+}
+
+.todo-app .todo-app-form button {
+  color: #fff;
+  background-color: #cd283c;
+  padding: 12px;
+  border: none;
+  margin-top: -2px;
+}
+
+.todo-app .task-list {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.todo-app .task-list .task {
+  list-style: none;
+  display: flex;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 12px;
+}
+
+.todo-app .task-list .task * {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.todo-app .task-list .task .task-action span {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.todo-app .task-list .task .task-done {
+  text-decoration: line-through;
+  opacity: .5;
+}
+
+.todo-app .todo-app-filter {
+  color: #fff;
+  margin-bottom: 24px;
+}
+
+.todo-app .todo-app-filter .title {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+}
+
+.todo-app .todo-app-filter .status-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 12px 0;
+}
+
+.todo-app .todo-app-filter .status-wrapper .status {
+  font-size: 22px;
+  line-height: 26px;
+  margin: 8px 0;
+}
+
+.todo-app .todo-app-filter .search input {
+  line-height: 34px;
+  font-size: 20px;
+  padding-left: 8px;
+}
