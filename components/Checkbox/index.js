@@ -9,31 +9,46 @@ export default function Checkbox({
 }) {
   return (
     <TouchableOpacity style={[style, styles.checkBoxWrapper]} onPress={setIsChecked}>
-      <View style={styles.box} />
+      <View style={[styles.box, { borderColor: isChecked ? "#cd283c" : "#fff" }]} />
       {
         isChecked && (
           <View style={styles.checkIco}>
-            <Text>✓</Text>
+            <Text style={styles.checkIcoText}>✓</Text>
           </View>
         )
       }
-      <Text>{title}</Text>
+      <Text style={styles.title}>{title}</Text>
     </TouchableOpacity>
   )
 }
 
 const styles = StyleSheet.create({
   checkBoxWrapper: {
-    position: 'relative'
+    position: 'relative',
+    display: "flex",
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   box: {
-    position: 'absolute',
     width: 20,
-    height: 20
+    height: 20,
+    borderWidth: 1,
+    marginRight: 6
   },
   checkIco: {
     position: 'absolute',
-    fontSize: 20,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 20,
+    height: 20,
+  },
+  checkIcoText: {
+    fontSize: 15,
     color: '#cd283c'
+  },
+  title: {
+    color: "#fff",
+    fontSize: 20
   }
 });

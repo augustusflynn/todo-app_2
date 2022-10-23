@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { styles } from './styles';
-import { View, Text, TextInput } from 'react-native'
+import { View, Text, TextInput, KeyboardAvoidingView, TouchableOpacity, Alert, FlatList } from 'react-native'
 import * as Utils from "./scripts";
 import moment from "moment";
-
+import commonStyle from '../../commonStyles'
+import CheckBox from '../Checkbox'
 export default function TodoApp({
   filter, setFilter,
   displaySetting,
@@ -12,27 +13,27 @@ export default function TodoApp({
   const [tasks, setTasks] = useState([]);
   const [total, setTotal] = useState(0)
   const [selectedKey, setSelectedKey] = useState()
-  const editTaskRef = useRef()
-
-  const onSubmit = (e) => {
-    e.preventDefault();
-    const inputNode = e.target["todo-text"];
-    const newTaskText = inputNode.value;
-    const newTask = Utils.createTask(newTaskText, currentDateObj);
-    setTasks((prev) => [...prev, newTask]);
-    inputNode.value = "";
+  const [newTaskValue, setNewTaskValue] = useState()
+  const [valueEditing, setValueEditing] = useState()
+  const onSubmit = async () => {
+    if (!newTaskValue) {
+    } else {
+      const newTask = await Utils.createTask(newTaskValue, currentDateObj);
+      setTasks((prev) => [...prev, newTask]);
+      setNewTaskValue()
+    }
   };
 
-  const onUpdateTask = (newVal, id, cb = () => { }) => {
-    let isSuccess = Utils.updateTask(newVal, id);
+  const onUpdateTask = async (newVal, id, cb = () => { }) => {
+    let isSuccess = await Utils.updateTask(newVal, id);
     if (isSuccess) {
       onGetTask(filter);
       cb();
     }
   };
 
-  const onGetTask = useCallback((currentFilter = filter) => {
-    const res = Utils.getTask(
+  const onGetTask = useCallback(async (currentFilter = filter) => {
+    const res = await Utils.getTask(
       currentFilter.limit,
       currentFilter.skip,
       currentFilter.searchText,
@@ -45,8 +46,7 @@ export default function TodoApp({
     }
     setTasks(res.dataTask)
     setTotal(res.total)
-    // eslint-disable-next-line
-  }, []);
+  }, [filter]);
 
   useEffect(() => {
     onGetTask();
@@ -80,167 +80,185 @@ export default function TodoApp({
     onGetTask(newFilter)
   }
 
-  const onDeleteTask = (id) => {
-    Utils.deleteTask(id);
+  const onDeleteTask = async (id) => {
+    await Utils.deleteTask(id);
     onGetTask();
   }
 
   return (
-    <View className="todo-app">
-      <View className="todo-app-filter">
-        <View className="title">
-          <Text>Bộ lọc</Text>
+    <KeyboardAvoidingView style={styles.todoApp}>
+      <View>
+        <View>
+          <Text style={styles.todoAppTitle}>Bộ lọc</Text>
         </View>
-        <View className="status-wrapper">
-          <View className="status">
-            <Input
-              type="checkbox"
-              id="all"
-              checked={filter.filter.isDone === undefined}
-              onChange={() => {
-                onChangeFilter({
-                  ...filter,
-                  filter: {
-                    isDone: undefined
-                  }
-                })
-              }}
-            />
-            <Text>
-              Toàn bộ
-            </Text>
-          </View>
-          <View className="status">
-            <Input
-              type="checkbox"
-              id="done"
-              checked={filter.filter.isDone === true}
-              onChange={() => {
-                onChangeFilter({
-                  ...filter,
-                  filter: {
-                    isDone: true
-                  }
-                })
-              }}
-            />
-            <Text htmlFor="done">
-              Đã xong
-            </Text>
-          </View>
-          <View className="status">
-            <Input
-              id="doing"
-              type="checkbox"
-              checked={filter.filter.isDone === false}
-              onChange={() => {
-                onChangeFilter({
-                  ...filter,
-                  filter: {
-                    isDone: false
-                  }
-                })
-              }}
-            />
-            <Text htmlFor="doing">
-              Chưa xong
-            </Text>
-          </View>
-        </View>
-        <View className="search">
-          <Input
-            placeholder="Tìm kiếm"
-            type="search"
-            onKeyDown={e => {
-              if (e.key === "Enter") {
-                onChangeFilter({
-                  ...filter,
-                  searchText: e.target.value
-                })
-              }
+        <View style={styles.statusWrapper}>
+          <CheckBox
+            isChecked={filter.filter.isDone === undefined}
+            setIsChecked={() => {
+              onChangeFilter({
+                ...filter,
+                filter: {
+                  isDone: undefined
+                }
+              })
             }}
+            title="Toàn bộ"
+          />
+          <CheckBox
+            isChecked={filter.filter.isDone === true}
+            setIsChecked={() => {
+              onChangeFilter({
+                ...filter,
+                filter: {
+                  isDone: true
+                }
+              })
+            }}
+            title="Đã xong"
+          />
+          <CheckBox
+            isChecked={filter.filter.isDone === false}
+            setIsChecked={() => {
+              onChangeFilter({
+                ...filter,
+                filter: {
+                  isDone: false
+                }
+              })
+            }}
+            title="Chưa xong"
+          />
+        </View>
+        <View style={styles.search}>
+          <TextInput
+            placeholder="Tìm kiếm"
+            placeholderTextColor="#fff"
+            style={commonStyle.input}
+            value={filter.searchText}
+            onChangeText={text => setFilter(prev => ({ ...prev, searchText: text }))}
           />
         </View>
       </View>
 
-      {/* {
+      {
         displaySetting.indexOf("D") > -1 && (
-          <form className="todo-app-form" onSubmit={onSubmit}>
-            <input id="todo-text" placeholder="Nhập gì đó ..." required />
-            <button type="submit">Tạo</button>
-          </form>
-        )
-      } */}
-
-      {/* <ul className="task-list" onScroll={onScroll}>
-        {tasks.reverse().map((task) => (
-          <li id={task.id} key={task.id} className="task">
-            <input
-              type="checkbox"
-              checked={task.isDone}
-              onChange={(e) => onUpdateTask({ isDone: e.target.checked }, task.id)}
+          <View style={styles.todoAppForm}>
+            <TextInput
+              placeholderTextColor="#fff"
+              style={[commonStyle.input, styles.createTaskInput]}
+              placeholder="Nhập gì đó ..."
+              value={newTaskValue}
+              onChangeText={setNewTaskValue}
             />
-            {
-              displaySetting.indexOf("D") > -1 && (
-                selectedKey === task.id ? (
-                  <></>
-                ) : (
-                  <span className="task-action">
-                    <span
-                      onClick={() => {
-                        setSelectedKey(task.id)
-                        setTimeout(() => {
-                          if (editTaskRef && editTaskRef.current) {
-                            editTaskRef.current.value = task.Text
-                            editTaskRef.current.focus()
+            <TouchableOpacity
+              onPress={onSubmit}
+              style={styles.todoAppBtnCreate}
+            >
+              <Text
+                style={styles.todoAppBtnCreateText}
+              >Tạo</Text>
+            </TouchableOpacity>
+          </View>
+        )
+      }
+      <FlatList
+        data={tasks.reverse()}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => {
+          return (
+            <View style={styles.taskList}>
+              <View style={styles.task}>
+                <CheckBox
+                  isChecked={item.isDone}
+                  setIsChecked={() => onUpdateTask({ isDone: !item.isDone }, item.id)}
+                />
+                {
+                  displaySetting.indexOf("D") > -1 && (
+                    selectedKey === item.id ? (
+                      <></>
+                    ) : (
+                      <View style={styles.taskAction}>
+                        <Text
+                          style={{ color: '#fff', marginRight: 8 }}
+                          onPress={() => {
+                            setSelectedKey(item.id)
+                            setValueEditing(item.label)
+                          }}
+                        >✎</Text>
+                        <Text
+                          style={{ color: '#fff' }}
+                          onPress={() => {
+                            Alert.alert(
+                              "Vui lòng xác nhận",
+                              "Bạn có chắc muốn xoá?",
+                              [
+                                {
+                                  text: "Xoá",
+                                  onPress: () => onDeleteTask(item.id)
+                                },
+                                {
+                                  text: "Huỷ"
+                                }
+                              ]
+                            )
+                          }}
+                        >🗑</Text>
+                      </View>
+                    )
+                  )
+                }
+                <View style={styles.todoLabel}>
+                  {
+                    selectedKey === item.id ? (
+                      <TextInput
+                        style={[commonStyle.input, { width: "94%" }]}
+                        value={valueEditing}
+                        onChangeText={setValueEditing}
+                        onSubmitEditing={() => {
+                          if (!valueEditing) {
+                            Alert.alert("Lỗi", "Không được để trống nội dung")
+                          } else {
+                            onUpdateTask({ label: valueEditing }, item.id, () => {
+                              setSelectedKey()
+                              setValueEditing()
+                              onGetTask(filter)
+                            })
                           }
-                        }, 500)
-                      }}
-                    >✎</span>
-                    <span
-                      onClick={() => {
-                        if (window.confirm('Bạn có chắc muốn xoá?')) {
-                          onDeleteTask(task.id)
-                        }
-                      }}
-                    >🗑</span>
-                  </span>
-                )
-              )
-            }
-            <span className={`${task.isDone ? "task-done" : ""}`}>
-              {
-                selectedKey === task.id ? (
-                  <input
-                    type="text"
-                    ref={editTaskRef}
-                    onBlur={(e) => {
-                      if (!e.target.value) {
-                        window.alert("Không được để trống")
-                      } else {
-                        onUpdateTask(
-                          { Text: e.target.value },
-                          task.id,
-                          () => {
-                            setSelectedKey()
-                          }
-                        )
-                      }
-                    }}
-                  />
-                ) : (
-                  <span>{task.Text}</span>
-                )
-              }
-              {
-                displaySetting === "M" && (
-                  <span>&nbsp;-&nbsp;{moment(task.datetime).format("DD/MM/YYYY")}</span>
-                )
-              }
-            </span>
-          </li>
-        ))}
-      </ul> */}
-    </View>
+                        }}
+                        onBlur={(e) => {
+                          // if (!e.target.value) {
+                          //   Alert.alert("Không được để trống")
+                          // } else {
+                          //   onUpdateTask(
+                          //     { label: e.target.value },
+                          //     item.id,
+                          //     () => {
+                          //       setSelectedKey()
+                          //     }
+                          //   )
+                          // }
+                        }}
+                      />
+                    ) : (
+                      <Text style={[{ color: "#fff" }, item.isDone ? styles.taskDone : {}]}>{item.label}</Text>
+                    )
+                  }
+                  {
+                    displaySetting === "M" && (
+                      <Text style={{ color: "#fff" }}>&nbsp;-&nbsp;{moment(item.datetime).format("DD/MM/YYYY")}</Text>
+                    )
+                  }
+                </View>
+              </View>
+            </View>
+          )
+        }}
+        ListEmptyComponent={(
+          <View style={styles.empty}>
+            <Text style={styles.emptyText}>Danh sách trống!</Text>
+          </View>
+        )}
+      />
+    </KeyboardAvoidingView>
   );
 }

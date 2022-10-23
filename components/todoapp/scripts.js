@@ -1,6 +1,7 @@
 import moment from "moment";
+import fs from 'react-native-fs';
 
-const LOCAL_STORAGE_KEY = "TODO_TASK";
+const PATH = fs.DocumentDirectoryPath + '/DB.txt';
 
 // @type Task {
 //   id: Number;
@@ -9,9 +10,8 @@ const LOCAL_STORAGE_KEY = "TODO_TASK";
 //   datetime: Date;
 // }
 
-export const createTask = (text, date) => {
-  let dataTask = "[]";
-  dataTask = JSON.parse(dataTask || "[]");
+export const createTask = async (text, date) => {
+  let dataTask = await _getTask();
   const newTask = {
     id: dataTask.length,
     label: text,
@@ -23,9 +23,8 @@ export const createTask = (text, date) => {
   return newTask;
 };
 
-export const updateTask = (data, id) => {
-  let dataTask = "[]";
-  dataTask = JSON.parse(dataTask || "[]");
+export const updateTask = async (data, id) => {
+  let dataTask = await _getTask();
   const taskIndex = dataTask.findIndex((_task) => _task.id === id);
   if (taskIndex > -1) {
     dataTask[taskIndex] = {
@@ -38,9 +37,8 @@ export const updateTask = (data, id) => {
   return false;
 };
 
-export const getTask = (limit, skip, searchText, filter = {}, startDate, endDate) => {
-  let dataTask = "[]";
-  dataTask = JSON.parse(dataTask || "[]");
+export const getTask = async (limit, skip, searchText, filter = {}, startDate, endDate) => {
+  let dataTask = await _getTask();
   const start = limit * skip;
   const end = start + limit;
   if (start > dataTask.length) {
@@ -88,9 +86,8 @@ export const getTask = (limit, skip, searchText, filter = {}, startDate, endDate
   return { dataTask: result, total: result.length };
 };
 
-export const checkIsDoneAllTask = (startDate, endDate) => {
-  let dataTask = "[]";
-  dataTask = JSON.parse(dataTask || "[]");
+export const checkIsDoneAllTask = async (startDate, endDate) => {
+  let dataTask = await _getTask();
 
   if (startDate) {
     dataTask = dataTask.filter(_task => {
@@ -109,18 +106,25 @@ export const checkIsDoneAllTask = (startDate, endDate) => {
       return false;
     });
   }
-
   const dataTaskDone = dataTask.filter(_task => _task.isDone);
   return (dataTask.length > 0 && dataTask.length === dataTaskDone.length);
 }
 
+export const deleteTask = async (id) => {
+  let dataTask = await _getTask();
+  dataTask = dataTask.filter(_task => _task.id !== id);
+  _storeTask(dataTask);
+}
+
 const _storeTask = (dataTask) => {
-  window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataTask));
+  fs.writeFile(PATH, JSON.stringify(dataTask), 'utf8')
+    .then(console.info)
+    .catch(console.error);
 };
 
-export const deleteTask = (id) => {
-  let dataTask = "[]";
-  dataTask = JSON.parse(dataTask || "[]");
-  dataTask = dataTask.filter(_task => _task.id !== id);
-  window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataTask))
+const _getTask = async () => {
+  return fs.readFile(PATH, "utf8")
+    .then((content) => {
+      return JSON.parse(content || "[]")
+    });
 }

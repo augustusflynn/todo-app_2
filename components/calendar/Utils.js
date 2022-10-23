@@ -1,11 +1,13 @@
 import moment from "moment";
+import React from 'react';
 
 export const initialState = {
   showYearTable: false,
   showMonthTable: false,
   showDateTable: true,
   dateObject: moment(),
-  allmonths: moment.months()
+  allmonths: moment.months(),
+  daysinmonth: <></>
 };
 
 const UPDATE_STATE = "UPDATE_STATE";

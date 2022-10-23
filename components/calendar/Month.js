@@ -1,9 +1,9 @@
-import React, { useReducer } from "react";
+import React, { useCallback, useLayoutEffect, useReducer } from "react";
 import moment from "moment";
 import { reducer, initialState, dispatchUpdateState } from './Utils'
 import TodoApp from "../todoapp";
 import { getTask, checkIsDoneAllTask } from "../todoapp/scripts";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { styles } from './calendarStyles';
 
 const weekdayshort = moment.weekdaysShort();
@@ -37,8 +37,7 @@ export default function Calendar({
     return state.dateObject.format("Y");
   };
 
-  const firstDayOfMonth = () => {
-    let dateObject = state.dateObject;
+  const firstDayOfMonth = (dateObject) => {
     let firstDay = moment(dateObject).startOf("month").format("d"); // index of day in week
     return firstDay;
   };
@@ -63,29 +62,28 @@ export default function Calendar({
       showMonthTable: !state.showMonthTable,
       showDateTable: !state.showDateTable
     }));
+    setDaysInMonth(dateObject)
   };
 
-  // fix this
   const MonthList = (props) => {
     let months = [];
     props.data.forEach((data) => {
       months.push(
-        <td
-          key={Math.random()}
-          className="calendar-month"
-          onClick={(e) => {
+        <TouchableOpacity
+          style={[styles.td, styles.selectMonth]}
+          onPress={() => {
             setMonth(data);
           }}
         >
           <Text>{data}</Text>
-        </td>
+        </TouchableOpacity>
       );
     });
     let rows = [];
     let cells = [];
 
     months.forEach((row, i) => {
-      if (i % 3 !== 0 || i === 0) {
+      if (i % 6 !== 0 || i === 0) {
         cells.push(row);
       } else {
         rows.push(cells);
@@ -95,18 +93,18 @@ export default function Calendar({
     });
     rows.push(cells);
     let monthlist = rows.map((d) => {
-      return <tr key={Math.random()}>{d}</tr>;
+      return <View style={[styles.tr, styles.yearListWrapper]} key={Math.random()}>{d}</View>;
     });
 
     return (
-      <table className="calendar-month">
-        <thead>
-          <tr>
-            <th colText="4">Chọn tháng</th>
-          </tr>
-        </thead>
-        <tbody>{monthlist}</tbody>
-      </table>
+      <View className="calendar-month">
+        <View style={styles.thead}>
+          <View style={styles.tr}>
+            <Text style={styles.selectYear}>Chọn tháng</Text>
+          </View>
+        </View>
+        <View style={styles.tbody}>{monthlist}</View>
+      </View>
     );
   };
 
@@ -124,9 +122,11 @@ export default function Calendar({
     } else {
       curr = "month";
     }
+    const newDate = state.dateObject.subtract(1, curr)
     dispatch(dispatchUpdateState({
-      dateObject: state.dateObject.subtract(1, curr)
+      dateObject: newDate
     }));
+    setDaysInMonth(newDate)
   };
 
   const onNext = () => {
@@ -136,9 +136,11 @@ export default function Calendar({
     } else {
       curr = "month";
     }
+    const newDate = state.dateObject.add(1, curr)
     dispatch(dispatchUpdateState({
-      dateObject: state.dateObject.add(1, curr)
+      dateObject: newDate
     }));
+    setDaysInMonth(newDate)
   };
 
   const setYear = (year) => {
@@ -149,6 +151,7 @@ export default function Calendar({
       showMonthTable: !state.showMonthTable,
       showYearTable: !state.showYearTable
     }));
+    setDaysInMonth(dateObject)
   };
 
   function getDates(startDate, stopDate) {
@@ -162,31 +165,29 @@ export default function Calendar({
     return dateArray;
   }
 
-  // fix this
-  const YearTable = (props) => {
+  const YearTable = (currentYear) => {
     let months = [];
-    let nextten = moment().set("year", props).add("year", 12).format("Y");
+    let nextten = moment().set("year", currentYear).add(12, "year").format("Y");
 
-    let tenyear = getDates(props, nextten);
+    let tenyear = getDates(currentYear, nextten);
 
     tenyear.forEach((data) => {
       months.push(
-        <td
-          key={Math.random()}
-          className="calendar-month"
-          onClick={() => {
+        <TouchableOpacity
+          style={styles.td}
+          onPress={() => {
             setYear(data);
           }}
         >
-          <Text>{data}</Text>
-        </td>
+          <Text style={styles.yearText}>{data}</Text>
+        </TouchableOpacity>
       );
     });
     let rows = [];
     let cells = [];
 
     months.forEach((row, i) => {
-      if (i % 3 !== 0 || i === 0) {
+      if (i % 6 !== 0 || i === 0) {
         cells.push(row);
       } else {
         rows.push(cells);
@@ -196,64 +197,68 @@ export default function Calendar({
     });
     rows.push(cells);
     let yearlist = rows.map((d) => {
-      return <tr key={Math.random()}>{d}</tr>;
+      return <View style={[styles.tr, styles.yearListWrapper]} key={Math.random()}>{d}</View>;
     });
 
     return (
-      <table className="calendar-month">
-        <thead>
-          <tr>
-            <th colText="4">Chọn năm</th>
-          </tr>
-        </thead>
-        <tbody>{yearlist}</tbody>
-      </table>
+      <View className="calendar-month">
+        <View style={styles.thead}>
+          <View style={styles.tr}>
+            <Text style={styles.selectYear}>Chọn năm</Text>
+          </View>
+        </View>
+        <View style={styles.tbody}>{yearlist}</View>
+      </View>
     );
   };
 
-  // fix from this
   let weekdayshortname = weekdayshort.map((day) => {
     return <Text style={styles.th} key={Math.random()}>{day}</Text>;
   });
 
-  let blanks = [];
-  for (let i = 0; i < firstDayOfMonth(); i++) {
-    blanks.push(<View style={styles.td} className="calendar-day empty"><Text>{""}</Text></View>);
-  }
-  let daysInMonthArray = [];
-  for (let d = 1; d <= daysInMonth(); d++) {
-    let currentDateFormat = state.dateObject.format("DD/MM/YYYY")
-    let currentDate = d < 10 ? `0${d}` : d
-
-    let today = moment().format("DD/MM/YYYY")
-    today = today.split("/")
-    today[0] = currentDate
-    today = today.join("/")
-    let todayObj = moment(today, "DD/MM/YYYY")
-
-    let date = currentDateFormat.split("/")
-    date[0] = currentDate
-    date = date.join("/")
-    date = moment(date, "DD/MM/YYYY")
-
-    let isHasTaskNotDone = getTask(1, 0, '', { isDone: false }, date.startOf('day'), date.endOf('d'))
-    let isDoneAllTask = checkIsDoneAllTask(todayObj.startOf('day'), todayObj.endOf('d'))
-
-    let isCurrentDay = currentDateFormat === today ? "today" : "";
-    let classNameForTask = ""
-    if (isDoneAllTask) {
-      classNameForTask = "task-done-all"
+  const setDaysInMonth = useCallback(async (dateObject = state.dateObject) => {
+    let blanks = [];
+    for (let i = 0; i < firstDayOfMonth(dateObject); i++) {
+      blanks.push(<View style={styles.td}><Text>{""}</Text></View>);
     }
-    if (!isDoneAllTask && isHasTaskNotDone && isHasTaskNotDone.total > 0) {
-      classNameForTask = "task"
-    }
-    let classNameNextDate = new Date().toISOString() < date.toISOString() ? "next-date" : ""
-    let classNamePrevDate = new Date().toISOString() > date.toISOString() ? "prev-date" : ""
+    let daysInMonthArray = [];
+    for (let d = 1; d <= daysInMonth(); d++) {
+      let currentDateFormat = dateObject.format("DD/MM/YYYY")
+      let currentDate = d < 10 ? `0${d}` : d
 
-    daysInMonthArray.push(
-      <TouchableOpacity key={Math.random()} style={styles.td} className={`calendar-day ${isCurrentDay} ${classNameForTask} ${classNamePrevDate} ${classNameNextDate}`}>
-        <Text
-          onClick={() => {
+      let today = moment().format("DD/MM/YYYY")
+      today = today.split("/")
+      today[0] = currentDate
+      today = today.join("/")
+
+      let date = currentDateFormat.split("/")
+      date[0] = currentDate
+      date = date.join("/")
+      date = moment(date, "DD/MM/YYYY")
+      let isHasTaskNotDone = await getTask(1, 0, '', { isDone: false }, date.startOf('day'), date.endOf('d'))
+      let isDoneAllTask = await checkIsDoneAllTask(date.startOf('day'), date.endOf('d'))
+      const styleDate = [styles.td]
+      const styleText = []
+      if (currentDateFormat === today) {
+        styleText.push(styles.today)
+      }
+      if (new Date().toISOString() < date.toISOString()) {
+        styleText.push(styles.nextDate)
+      }
+      if (new Date().toISOString() > date.toISOString()) {
+        styleText.push(styles.prevDate)
+      }
+      if (isDoneAllTask) {
+        styleDate.push(styles.taskDoneAll)
+      }
+      if (!isDoneAllTask && isHasTaskNotDone && isHasTaskNotDone.total > 0) {
+        styleDate.push(styles.task)
+      }
+
+      daysInMonthArray.push(
+        <TouchableOpacity
+          style={styleDate}
+          onPress={() => {
             setCurrentDateObj(date)
             setDisplaySetting(`D`)
             setFilter({
@@ -266,33 +271,42 @@ export default function Calendar({
             })
           }}
         >
-          {d}
-        </Text>
-      </TouchableOpacity>
-    );
-  }
-  var totalSlots = [...blanks, ...daysInMonthArray];
-  let rows = [];
-  let cells = [];
-
-  totalSlots.forEach((row, i) => {
-    if (i % 7 !== 0) {
-      cells.push(row);
-    } else {
-      rows.push(cells);
-      cells = [];
-      cells.push(row);
+          <Text
+            style={styleText}
+          >
+            {d}
+          </Text>
+        </TouchableOpacity >
+      );
     }
-    if (i === totalSlots.length - 1) {
-      // let insertRow = cells.slice();
-      rows.push(cells);
-    }
-  });
+    var totalSlots = [...blanks, ...daysInMonthArray];
+    let rows = [];
+    let cells = [];
 
-  let daysinmonth = rows.map((d) => {
-    return <View style={styles.tr} className="calendar-date-body" key={Math.random()}>{d}</View>;
-  });
-  /** to this */
+    totalSlots.forEach((row, i) => {
+      if (i % 7 !== 0) {
+        cells.push(row);
+      } else {
+        rows.push(cells);
+        cells = [];
+        cells.push(row);
+      }
+      if (i === totalSlots.length - 1) {
+        rows.push(cells);
+      }
+    });
+
+    let daysinmonth = rows.map((d) => {
+      return <View style={styles.tr} key={Math.random()}>{d}</View>;
+    });
+    dispatch(dispatchUpdateState({
+      daysinmonth: daysinmonth
+    }));
+  }, [])
+
+  useLayoutEffect(() => {
+    setDaysInMonth();
+  }, [setDaysInMonth])
 
   return (
     <>
@@ -334,12 +348,12 @@ export default function Calendar({
           </TouchableOpacity>
         </View>
 
-        {/* <View style={styles.calendarDate}>
-          {state.showYearTable && <YearTable props={year()} />}
+        <View style={styles.calendarDate}>
+          {state.showYearTable && <YearTable currentYear={year()} />}
           {state.showMonthTable && (
             <MonthList data={moment.months()} />
           )}
-        </View> */}
+        </View>
 
         {state.showDateTable && (
           <View style={styles.calendarDate} className="calendar-date">
@@ -347,17 +361,19 @@ export default function Calendar({
               <View style={styles.thead}>
                 <View style={styles.tr}>{weekdayshortname}</View>
               </View>
-              <View style={styles.tbody}>{daysinmonth}</View>
+              <View style={styles.tbody}>
+                {state.daysinmonth}
+              </View>
             </View>
           </View>
         )}
       </View>
-      {/* <TodoApp
+      <TodoApp
         currentDateObj={state.dateObject}
         filter={filter}
         setFilter={setFilter}
         displaySetting={displaySetting}
-      /> */}
+      />
     </>
   );
 }

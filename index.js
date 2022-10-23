@@ -28,13 +28,13 @@ function App() {
 
   return (
     <SafeAreaView style={CommonStyles.body}>
-      <CalendarMonth {...props} />
-      {/* {
+      {
         displaySetting.indexOf("M") > -1 ? (
+          <CalendarMonth {...props} />
         ) : (
           <CalendarDate {...props} />
         )
-      } */}
+      }
     </SafeAreaView>
   );
 }

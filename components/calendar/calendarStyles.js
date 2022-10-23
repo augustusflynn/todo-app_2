@@ -4,9 +4,7 @@ export const styles = StyleSheet.create({
   tailDatetimeCalendar: {
     width: '100%',
     height: "auto",
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5
+    backgroundColor: "#ffffff"
   },
   calendarNavi: {
     width: '100%',
@@ -27,7 +25,8 @@ export const styles = StyleSheet.create({
   calendarButton: {
     fontSize: 30,
     fontWeight: '600',
-    color: "#fff"
+    color: "#fff",
+    paddingHorizontal: 16
   },
   calendarLabel: {
     fontSize: 20,
@@ -72,5 +71,65 @@ export const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  today: {
+    color: "#3296c8",
+    borderWidth: 1,
+    borderColor: "#3296c8",
+    borderRadius: 5,
+    padding: 12
+  },
+  nextDate: {
+    fontWeight: '700'
+  },
+  prevDate: {
+    opacity: 0.5
+  },
+  task: {
+    color: "#cd283c",
+    borderWidth: 1,
+    borderColor: "#cd283c",
+    borderRadius: 5,
+    padding: 12
+  },
+  taskDoneAll: {
+    borderWidth: 1,
+    borderColor: "#5eba7d",
+    borderRadius: 5,
+    padding: 12
+  },
+  selectYear: {
+    textAlign: 'center',
+    width: '100%',
+    paddingTop: 8
+  },
+  yearListWrapper: {
+    justifyContent: 'center'
+  },
+  yearText: {
+    fontSize: 18,
+    fontWeight: '600'
+  },
+  selectMonth: {
+    minWidth: 75
+  },
+  calendarDetailDate: {
+  },
+  month: {
+    fontSize: 21,
+    fontWeight: "600",
+    lineHeight: 30,
+    textAlign: 'center'
+  },
+  date: {
+    fontSize: 66,
+    fontWeight: "bold",
+    lineHeight: 100,
+    textAlign: 'center'
+  },
+  time: {
+    fontSize: 18,
+    fontWeight: "500",
+    lineHeight: 28
   }
 })

@@ -1,49 +1,47 @@
 import moment from 'moment';
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import TodoApp from '../todoapp';
-// import "./calendar.css"
+import { View, Text, TouchableOpacity } from 'react-native'
+import { styles } from './calendarStyles'
 
 function Date({
   setDisplaySetting, displaySetting,
   currentDateObj, setCurrentDateObj,
   filter, setFilter
 }) {
-  const timer = useRef()
-
   const onPrev = () => {
-    setCurrentDateObj(prev => moment(prev.subtract(1, 'day')))
+    const newDate = moment(currentDateObj.subtract(1, 'day'))
+    setCurrentDateObj(newDate)
+    setFilter(prev => ({
+      ...prev,
+      startDate: newDate.startOf('date').toDate(),
+      endDate: newDate.endOf('date').toDate()
+    }))
   }
 
   const onNext = () => {
-    setCurrentDateObj(prev => moment(prev.add(1, 'day')))
+    const newDate = moment(currentDateObj.add(1, 'day'))
+    setCurrentDateObj(newDate)
+    setFilter(prev => ({
+      ...prev,
+      startDate: newDate.startOf('date').toDate(),
+      endDate: newDate.endOf('date').toDate()
+    }))
   }
-
-  useEffect(() => {
-    let interValId = setInterval(() => {
-      const hour = moment().get("hour")
-      const minute = moment().get("minute")
-      const second = moment().get("second")
-      let currentTime = `${hour < 10 ? "0" + hour : hour}:${minute < 10 ? "0" + minute : minute}:${second < 10 ? "0" + second : second}`
-      timer.current.innerHTML = currentTime
-    }, 1000)
-
-    return () => {
-      clearInterval(interValId)
-    }
-  }, [])
-
 
   return (
     <>
-      <div className="tail-datetime-calendar">
-        <div className="calendar-navi">
-          <span
-            onClick={onPrev}
-            className="calendar-button button-prev"
-          />
-          <span
-            className="calendar-label"
-            onClick={() => {
+      <View style={styles.tailDatetimeCalendar}>
+        <View style={styles.calendarNavi}>
+          <TouchableOpacity
+            onPress={onPrev}
+          >
+            <Text
+              style={[styles.calendarButton, styles.buttonPrev]}
+            >‹</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
               setDisplaySetting(`M`)
               setFilter({
                 limit: 20,
@@ -55,19 +53,31 @@ function Date({
               })
             }}
           >
-            Quay lại
-          </span>
-          <span
-            onClick={onNext}
-            className="calendar-button button-next"
-          />
-        </div>
-        <div className="calendar-detail-date">
-          <div className='month'>{currentDateObj.get("month")}/{currentDateObj.get("year")}</div>
-          <div className='date'>{currentDateObj.get("D")}</div>
-          <div ref={timer} className="time" />
-        </div>
-      </div>
+            <Text
+              style={styles.calendarLabel}
+            >Quay lại</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onNext}>
+            <Text
+              style={[styles.calendarButton, styles.buttonNext]}
+            >›</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.calendarDetailDate}>
+          <View>
+            <Text style={styles.month}>
+              {currentDateObj.get("month")}/{currentDateObj.get("year")}
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.date}>
+              {currentDateObj.get("D")}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+
       <TodoApp
         currentDateObj={currentDateObj}
         filter={filter}

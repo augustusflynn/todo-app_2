@@ -5,13 +5,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#252525",
     flex: 1,
     width: '100%',
-    paddingHorizontal: 12
+    paddingHorizontal: 12,
+    paddingTop: 12
   },
   input: {
     backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: "#fff",
-    color: "#fff",
+    color: "#ffffff",
+    paddingLeft: 8
     // accentColor: "#cd283c"
   }
 })
