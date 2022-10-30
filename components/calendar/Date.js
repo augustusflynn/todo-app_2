@@ -66,7 +66,7 @@ function Date({
         <View style={styles.calendarDetailDate}>
           <View>
             <Text style={styles.month}>
-              {currentDateObj.get("month")}/{currentDateObj.get("year")}
+              {currentDateObj.format("MM/YYYY")}
             </Text>
           </View>
           <View>

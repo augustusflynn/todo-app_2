@@ -12,8 +12,9 @@ const PATH = fs.DocumentDirectoryPath + '/DB.txt';
 
 export const createTask = async (text, date) => {
   let dataTask = await _getTask();
+  const newId = Math.max(...dataTask.map(_task => _task.id));
   const newTask = {
-    id: dataTask.length,
+    id: newId + 1,
     label: text,
     isDone: false,
     datetime: date.toDate().toISOString()
